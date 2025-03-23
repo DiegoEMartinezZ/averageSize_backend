@@ -1,6 +1,7 @@
 package com.averagesize.averagesize.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,16 +17,16 @@ public class Link {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_link", nullable = false)
-    private long id_link;
+    private long idLink;
 
     @Column(name = "url_original", nullable = false)
-    private String url_original;
+    private String urlOriginal;
 
-    @Column(name = "url_short", nullable = false)
-    private String url_short;
+    @Column(name = "url_short", nullable = false, unique = true)
+    private String urlShort;
 
-    @Column(name = "create_at", nullable = false)
-    private LocalDate create_at;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "id_user", nullable = false)
