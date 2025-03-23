@@ -1,6 +1,7 @@
 package com.averagesize.averagesize.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,17 +17,17 @@ public class Click {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_click", nullable = false)
-    private long id_click;
+    private long idClick;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "id_link", nullable = false)
     private Link link;
 
-    @Column(name = "ip_user", nullable = false, unique = true)
-    private String ip_user;
+    @Column(name = "ip_user", nullable = false)
+    private String ipUser;
 
-    @Column(name = "navegator", nullable = false)
-    private String navegator;
+    @Column(name = "navigator", nullable = false)
+    private String navigator;
 
     @Column(name = "device", nullable = false)
     private String device;
@@ -35,5 +36,5 @@ public class Click {
     private String location;
 
     @Column(name = "click_at", nullable = false)
-    private LocalDate click_at;
+    private LocalDateTime clickAt;
 }
