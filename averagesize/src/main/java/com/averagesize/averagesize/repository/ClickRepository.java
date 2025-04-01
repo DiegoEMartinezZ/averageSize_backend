@@ -11,6 +11,6 @@ import com.averagesize.averagesize.entity.Click;
 
 @Repository
 public interface ClickRepository extends JpaRepository<Click, Long> {
-    @Query("SELECT c FROM Click c JOIN c.link l WHERE l.url_short = :url OR l.url_original = :url")
+    @Query("SELECT c FROM Click c JOIN c.link l WHERE l.urlShort = :url OR l.urlOriginal = :url")
     public List<Click> findByLinkUrl(@Param("url") String url);
 }

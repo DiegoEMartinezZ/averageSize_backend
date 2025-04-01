@@ -14,4 +14,7 @@ import com.averagesize.averagesize.entity.User;
 public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT u FROM User u WHERE u.email = :email")
     public Optional<User> findByEmail(@Param("email") String email);
+
+    boolean existsByEmail(String email);
+
 }
