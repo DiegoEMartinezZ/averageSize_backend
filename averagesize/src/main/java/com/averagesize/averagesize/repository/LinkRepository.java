@@ -11,6 +11,6 @@ import com.averagesize.averagesize.entity.Link;
 
 @Repository
 public interface LinkRepository extends JpaRepository<Link, Long> {
-    @Query("SELECT l FROM Link l WHERE l.url_original = :url OR l.url_short = :url")
+    @Query("SELECT l FROM Link l WHERE l.urlOriginal = :url OR l.urlShort = :url")
     public Optional<Link> findByAnyUrl(@Param("url") String url);
 }
