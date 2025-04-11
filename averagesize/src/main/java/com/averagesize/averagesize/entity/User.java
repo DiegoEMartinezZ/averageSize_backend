@@ -35,6 +35,13 @@ public class User {
     @Column(name = "create_at", nullable = false)
     private LocalDateTime createAt;
 
+    @Column(name = "active", nullable = false)
+    private boolean active;
+
+    // User that be able to use the application in alfa version
+    @Column(name = "is_beta_tester", nullable = false)
+    private boolean isBetaTester;
+
     // When user change it will change links only for new links or change in users
     // (not remove)
     @OneToMany(mappedBy = "user", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
