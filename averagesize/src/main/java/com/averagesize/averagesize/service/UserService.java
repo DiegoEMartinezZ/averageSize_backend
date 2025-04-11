@@ -3,7 +3,6 @@ package com.averagesize.averagesize.service;
 import java.util.List;
 import java.util.UUID;
 
-import org.hibernate.service.spi.ServiceException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,6 +11,7 @@ import org.springframework.util.StringUtils;
 
 import com.averagesize.averagesize.entity.User;
 import com.averagesize.averagesize.exceptions.ResourceNotFoundException;
+import com.averagesize.averagesize.exceptions.ServiceException;
 import com.averagesize.averagesize.repository.UserRepository;
 
 import lombok.AllArgsConstructor;
@@ -38,7 +38,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User Doesn't Exist" + email));
+                .orElseThrow(() -> new ResourceNotFoundException("User Doesn't Exist: " + email));
     }
 
     // Create User
@@ -48,13 +48,13 @@ public class UserService {
             throw new IllegalArgumentException("User cannot be null");
         }
         // hasText(): Check for whitespaces-only strings
-        if (StringUtils.hasText(user.getName())) {
+        if (!StringUtils.hasText(user.getName())) {
             throw new IllegalArgumentException("Name is required");
         }
-        if (StringUtils.hasText(user.getLastName())) {
+        if (!StringUtils.hasText(user.getLastName())) {
             throw new IllegalArgumentException("Last name is required");
         }
-        if (StringUtils.hasText(user.getEmail())) {
+        if (!StringUtils.hasText(user.getEmail())) {
             throw new IllegalArgumentException("Email is required");
         }
         if (!isValidEmail(user.getEmail())) {
@@ -64,7 +64,7 @@ public class UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new IllegalArgumentException("Email already exists in our DB");
         }
-        if (StringUtils.hasText(user.getPassword())) {
+        if (!StringUtils.hasText(user.getPassword())) {
             throw new IllegalArgumentException("Password is required");
         }
 
@@ -119,7 +119,7 @@ public class UserService {
     @Transactional
     public void deleteUser(UUID id) {
         if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found by ID" + id);
+            throw new ResourceNotFoundException("User not found by ID: " + id);
         }
         userRepository.deleteById(id);
     }
