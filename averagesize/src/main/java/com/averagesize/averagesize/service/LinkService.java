@@ -1,29 +1,31 @@
 package com.averagesize.averagesize.service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
-import com.averagesize.averagesize.entity.Link;
+import com.averagesize.averagesize.dto.LinkReqDTO;
+import com.averagesize.averagesize.dto.LinkResDTO;
+import com.averagesize.averagesize.dto.LinkUpdateDTO;
 
 public interface LinkService {
 
-    Link createLink(Link link);
+    LinkResDTO createLink(LinkReqDTO linkDTO, UUID userId);
 
-    Optional<Link> getLinkById(long id);
+    LinkResDTO getLinkById(long id);
 
-    Link getLinkByShortUrl(String shortUrl);
+    LinkResDTO getLinkByShortUrl(String shortUrl);
 
-    List<Link> getAllLinksByUserId(long userId);
+    List<LinkResDTO> getAllLinksByUserId(UUID userId);
 
-    List<Link> getAllActiveLinks();
+    List<LinkResDTO> getAllActiveLinks();
 
-    Link updateLink(Link link);
+    LinkResDTO updateLink(long linkId, LinkUpdateDTO linkDTO);
 
     void deleteLink(long id);
 
-    void deactivateLink(long id);
+    LinkResDTO deactivateLink(long id);
 
-    void activateLink(long id);
+    LinkResDTO activateLink(long id);
 
     String generateShortUrl();
 

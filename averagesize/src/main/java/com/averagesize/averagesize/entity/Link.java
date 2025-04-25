@@ -21,7 +21,7 @@ public class Link {
     @Column(name = "url_original", nullable = false)
     private String urlOriginal;
 
-    @Column(name = "url_short", nullable = false, unique = true)
+    @Column(name = "url_short", nullable = false)
     private String urlShort;
 
     @Column(name = "title", nullable = false)
