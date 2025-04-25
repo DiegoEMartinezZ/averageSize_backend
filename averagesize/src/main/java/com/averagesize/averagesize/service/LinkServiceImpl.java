@@ -2,84 +2,122 @@ package com.averagesize.averagesize.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.averagesize.averagesize.dto.LinkReqDTO;
+import com.averagesize.averagesize.dto.LinkResDTO;
+import com.averagesize.averagesize.dto.LinkUpdateDTO;
 import com.averagesize.averagesize.entity.Link;
+import com.averagesize.averagesize.entity.User;
+import com.averagesize.averagesize.exceptions.ResourceNotFoundException;
+import com.averagesize.averagesize.mapper.LinkMapper;
 import com.averagesize.averagesize.repository.LinkRepository;
+import com.averagesize.averagesize.repository.UserRepository;
 
 @Service
 public class LinkServiceImpl implements LinkService {
     private final LinkRepository linkRepository;
+    private final UserRepository userRepository;
+    private final LinkMapper linkMapper;
 
-    public LinkServiceImpl(LinkRepository linkRepository) {
+    public LinkServiceImpl(LinkRepository linkRepository, UserRepository userRepository, LinkMapper linkMapper) {
         this.linkRepository = linkRepository;
+        this.userRepository = userRepository;
+        this.linkMapper = linkMapper;
     }
 
     @Override
-    public Link createLink(Link link) {
-        if (link.getCreatedAt() == null) {
-            link.setCreatedAt(LocalDateTime.now());
-        }
+    @Transactional
+    public LinkResDTO createLink(LinkReqDTO linkDTO, UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        if (link.getUrlShort() == null || link.getUrlShort().isEmpty()) {
-            link.setUrlShort(generateShortUrl());
-        }
-
+        String shortUrl = generateShortUrl();
+        Link link = linkMapper.toEntity(linkDTO, user, shortUrl);
+        link.setCreatedAt(LocalDateTime.now());
         link.setActive(true);
-        return linkRepository.save(link);
+
+        Link savedLink = linkRepository.save(link);
+        return linkMapper.toDto(savedLink);
     }
 
     @Override
-    public Optional<Link> getLinkById(long id) {
-        return linkRepository.findById(id);
+    @Transactional(readOnly = true)
+    public LinkResDTO getLinkById(long id) {
+        Link link = linkRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Link not found with id: " + id));
+        return linkMapper.toDto(link);
     }
 
     @Override
-    public Link getLinkByShortUrl(String shortUrl) {
-        return linkRepository.findByUrlShort(shortUrl)
-                .orElseThrow(() -> new RuntimeException("Link not found with short URL: " + shortUrl));
+    @Transactional(readOnly = true)
+    public LinkResDTO getLinkByShortUrl(String shortUrl) {
+        Link link = linkRepository.findByUrlShort(shortUrl)
+                .orElseThrow(() -> new ResourceNotFoundException("Link not found with short URL: " + shortUrl));
+        return linkMapper.toDto(link);
     }
 
     @Override
-    public List<Link> getAllLinksByUserId(long userId) {
-        return linkRepository.findByUserIdUser(userId);
+    @Transactional(readOnly = true)
+    public List<LinkResDTO> getAllLinksByUserId(UUID userId) {
+        List<Link> links = linkRepository.findByUserIdUser(userId);
+        return links.stream()
+                .map(linkMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Link> getAllActiveLinks() {
-        return linkRepository.findByActiveTrue();
+    @Transactional(readOnly = true)
+    public List<LinkResDTO> getAllActiveLinks() {
+        List<Link> links = linkRepository.findByActiveTrue();
+        return links.stream()
+                .map(linkMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Link updateLink(Link link) {
-        if (!linkRepository.existsById(link.getIdLink())) {
-            throw new RuntimeException("Link not found with id: " + link.getIdLink());
-        }
-        return linkRepository.save(link);
+    @Transactional
+    public LinkResDTO updateLink(long linkId, LinkUpdateDTO linkDTO) {
+        Link link = linkRepository.findById(linkId)
+                .orElseThrow(() -> new ResourceNotFoundException("Link not found with id: " + linkId));
+
+        linkMapper.updateEntityFromDto(linkDTO, link);
+        Link updatedLink = linkRepository.save(link);
+        return linkMapper.toDto(updatedLink);
     }
 
     @Override
+    @Transactional
     public void deleteLink(long id) {
+        if (!linkRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Link not found with id: " + id);
+        }
         linkRepository.deleteById(id);
     }
 
     @Override
-    public void deactivateLink(long id) {
+    @Transactional
+    public LinkResDTO deactivateLink(long id) {
         Link link = linkRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Link not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Link not found with id: " + id));
         link.setActive(false);
-        linkRepository.save(link);
+        Link updatedLink = linkRepository.save(link);
+        return linkMapper.toDto(updatedLink);
     }
 
     @Override
-    public void activateLink(long id) {
+    @Transactional
+    public LinkResDTO activateLink(long id) {
         Link link = linkRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Link not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Link not found with id: " + id));
         link.setActive(true);
-        linkRepository.save(link);
+        Link updatedLink = linkRepository.save(link);
+        return linkMapper.toDto(updatedLink);
     }
 
     @Override
