@@ -42,6 +42,16 @@ public class User {
     @Column(name = "is_beta_tester", nullable = false)
     private boolean isBetaTester;
 
+    @Column(name = "magic_link_token")
+    private String magicLinkToken;
+
+    @Column(name = "magic_link_expiry")
+    private LocalDateTime magicLinkExpiry;
+
+    // Last login tracking
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
     // When user change it will change links only for new links or change in users
     // (not remove)
     @OneToMany(mappedBy = "user", cascade = { CascadeType.PERSIST, CascadeType.MERGE })

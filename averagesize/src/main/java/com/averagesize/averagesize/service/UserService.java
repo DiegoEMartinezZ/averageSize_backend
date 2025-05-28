@@ -98,10 +98,6 @@ public class UserService {
             }
             existingUser.setEmail(updateUserDTO.getEmail());
         }
-        // Update password if provided
-        if (StringUtils.hasText(updateUserDTO.getPassword())) {
-            existingUser.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
-        }
 
         // Update beta tester status if needed
         existingUser.setBetaTester(updateUserDTO.isBetaTester());
@@ -116,13 +112,48 @@ public class UserService {
         }
     }
 
-    // Delete User
+    // Update password
     @Transactional
-    public void deleteUser(UUID id) {
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found by ID: " + id);
+    public UserResDTO updatePassword(UUID id, String currentPassword, String newPassword) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found in our DB"));
+
+        // Verify current password is correct
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
         }
-        userRepository.deleteById(id);
+
+        // Validate new password (you can add complexity requirements here)
+        if (!StringUtils.hasText(newPassword)) {
+            throw new IllegalArgumentException("New password cannot be empty");
+        }
+        // Add more validation as needed
+
+        // Update the password
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        try {
+            User updatedUser = userRepository.save(user);
+            return userMapper.toDto(updatedUser);
+        } catch (Exception e) {
+            throw new ServiceException("Failed to update password", e);
+        }
+    }
+
+    // Delete User (Hard Delete)
+    @Transactional
+    public UserResDTO deleteUser(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found by ID: " + id));
+
+        try {
+            // Get the user data before deletion for response
+            UserResDTO deletedUserDTO = userMapper.toDto(user);
+            userRepository.delete(user);
+            return deletedUserDTO;
+        } catch (Exception e) {
+            throw new ServiceException("Failed to delete user", e);
+        }
     }
 
     // Activate/Deactivate User
